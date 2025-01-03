@@ -344,7 +344,8 @@ fn parse_days_of_week<'a>(
 
     fn make_weekday(n: u8) -> Weekday {
         let weekday = norm_sunday(n) as i8;
-        Weekday::from_monday_one_offset(weekday).expect("{weekday} must be in range 1..=7")
+        Weekday::from_monday_one_offset(weekday)
+            .unwrap_or_else(|err| panic!("{weekday} must be in range 1..=7: {err:?}"))
     }
 
     fn parse_single_day_of_week<'a>(
