@@ -60,7 +60,7 @@ pub enum FallbackTimezoneOption {
 pub struct ParseOptions {
     /// Whether fallback to a certain timezone when the timezone part is missing.
     ///
-    /// Default to `None`.
+    /// Default to [`FallbackTimezoneOption::None`].
     pub fallback_timezone_option: FallbackTimezoneOption,
 
     /// The hashed value to replace `H` in the crontab expression. If [`None`], `H` is not allowed.
