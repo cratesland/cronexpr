@@ -355,7 +355,7 @@
 //!
 //! ## Why do you create this crate?
 //!
-//! The other way when I was implementing features like [`CREATE TASK` in Snowflake](https://docs.snowflake.com/en/sql-reference/sql/create-task),
+//! The other day when I was implementing [`CREATE TASK` in ScopeDB](https://www.scopedb.io/reference/stmt-ddl#create-task),
 //! it comes to a requirement to support parsing and driving a crontab expression.
 //!
 //! Typically, the language interface looks like:

@@ -90,6 +90,12 @@ fn main() {
 
 `cronexpr` is [on crates.io](https://crates.io/crates/cronexpr) and can be used by adding `cronexpr` to your dependencies in your project's `Cargo.toml`. Or more simply, just run `cargo add cronexpr`.
 
+## Who is using `cronexpr`?
+
+The original purpose of this library is to be used in [supporting `CREATE TASK` in ScopeDB](https://www.scopedb.io/reference/stmt-ddl#create-task).
+
+If you are using `cronexpr` in your project, please feel free to open a PR to add your project to this list.
+
 ## Dependencies
 
 `cronexpr` depends on:
