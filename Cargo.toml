@@ -14,7 +14,7 @@
 
 [package]
 name = "cronexpr"
-version = "1.1.4"
+version = "1.1.5"
 
 description = "A library to parse and drive the crontab expression."
 edition = "2021"
