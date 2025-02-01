@@ -24,11 +24,11 @@ use winnow::combinator::fail;
 use winnow::combinator::separated;
 use winnow::error::ContextError;
 use winnow::error::ErrMode;
-use winnow::error::ErrorKind;
 use winnow::error::FromExternalError;
 use winnow::stream::Stream;
 use winnow::token::take_while;
-use winnow::PResult;
+use winnow::ModalParser;
+use winnow::ModalResult;
 use winnow::Parser;
 
 use crate::Crontab;
@@ -251,7 +251,7 @@ fn format_parse_error(
 
 fn parse_minutes<'a>(
     options: ParseOptions,
-) -> impl Parser<&'a str, PossibleLiterals, ContextError> {
+) -> impl ModalParser<&'a str, PossibleLiterals, ContextError> {
     let context = ParseContext {
         range_fn: || 0..=59,
         hashed_value: options.hashed_value,
@@ -259,7 +259,9 @@ fn parse_minutes<'a>(
     move |input: &mut &str| do_parse_number_only(context, input)
 }
 
-fn parse_hours<'a>(options: ParseOptions) -> impl Parser<&'a str, PossibleLiterals, ContextError> {
+fn parse_hours<'a>(
+    options: ParseOptions,
+) -> impl ModalParser<&'a str, PossibleLiterals, ContextError> {
     let context = ParseContext {
         range_fn: || 0..=23,
         hashed_value: options.hashed_value,
@@ -267,13 +269,17 @@ fn parse_hours<'a>(options: ParseOptions) -> impl Parser<&'a str, PossibleLitera
     move |input: &mut &str| do_parse_number_only(context, input)
 }
 
-fn parse_months<'a>(options: ParseOptions) -> impl Parser<&'a str, PossibleLiterals, ContextError> {
+fn parse_months<'a>(
+    options: ParseOptions,
+) -> impl ModalParser<&'a str, PossibleLiterals, ContextError> {
     let context = ParseContext {
         range_fn: || 1..=12,
         hashed_value: options.hashed_value,
     };
 
-    fn parse_single_month<'a>(context: ParseContext) -> impl Parser<&'a str, u8, ContextError> {
+    fn parse_single_month<'a>(
+        context: ParseContext,
+    ) -> impl ModalParser<&'a str, u8, ContextError> {
         alt((
             "JAN".map(|_| 1),
             "FEB".map(|_| 2),
@@ -328,7 +334,7 @@ fn parse_months<'a>(options: ParseOptions) -> impl Parser<&'a str, PossibleLiter
 
 fn parse_days_of_week<'a>(
     options: ParseOptions,
-) -> impl Parser<&'a str, ParsedDaysOfWeek, ContextError> {
+) -> impl ModalParser<&'a str, ParsedDaysOfWeek, ContextError> {
     let context = ParseContext {
         range_fn: || 0..=7,
         hashed_value: options.hashed_value,
@@ -350,7 +356,7 @@ fn parse_days_of_week<'a>(
 
     fn parse_single_day_of_week<'a>(
         context: ParseContext,
-    ) -> impl Parser<&'a str, u8, ContextError> {
+    ) -> impl ModalParser<&'a str, u8, ContextError> {
         alt((
             "SUN".map(|_| 0),
             "MON".map(|_| 1),
@@ -365,7 +371,7 @@ fn parse_days_of_week<'a>(
 
     fn parse_single_day_of_week_ext<'a>(
         context: ParseContext,
-    ) -> impl Parser<&'a str, PossibleValue, ContextError> {
+    ) -> impl ModalParser<&'a str, PossibleValue, ContextError> {
         alt((
             (parse_single_day_of_week(context), "L")
                 .map(|(n, _)| PossibleValue::LastDayOfWeek(make_weekday(n))),
@@ -437,7 +443,7 @@ fn parse_days_of_week<'a>(
 
 fn parse_days_of_month<'a>(
     options: ParseOptions,
-) -> impl Parser<&'a str, ParsedDaysOfMonth, ContextError> {
+) -> impl ModalParser<&'a str, ParsedDaysOfMonth, ContextError> {
     let context = ParseContext {
         range_fn: || 1..=31,
         hashed_value: options.hashed_value,
@@ -445,7 +451,7 @@ fn parse_days_of_month<'a>(
 
     fn parse_single_day_of_month_ext<'a>(
         context: ParseContext,
-    ) -> impl Parser<&'a str, PossibleValue, ContextError> {
+    ) -> impl ModalParser<&'a str, PossibleValue, ContextError> {
         alt((
             (parse_single_number(context), "W").map(|(n, _)| PossibleValue::NearestWeekday(n)),
             parse_single_number(context).map(PossibleValue::Literal),
@@ -503,7 +509,7 @@ fn parse_days_of_month<'a>(
     }
 }
 
-fn parse_timezone(input: &mut &str) -> PResult<jiff::tz::TimeZone> {
+fn parse_timezone(input: &mut &str) -> ModalResult<jiff::tz::TimeZone> {
     take_while(0.., |_| true)
         .try_map_cut(|timezone| {
             jiff::tz::TimeZone::get(timezone).map_err(|_| {
@@ -518,7 +524,7 @@ fn parse_timezone(input: &mut &str) -> PResult<jiff::tz::TimeZone> {
 }
 
 // number only = minutes, hours, or months
-fn do_parse_number_only(context: ParseContext, input: &mut &str) -> PResult<PossibleLiterals> {
+fn do_parse_number_only(context: ParseContext, input: &mut &str) -> ModalResult<PossibleLiterals> {
     let values = parse_list(alt((
         parse_step(context, parse_single_number).map(|r| {
             r.into_iter()
@@ -552,7 +558,7 @@ fn do_parse_number_only(context: ParseContext, input: &mut &str) -> PResult<Poss
     Ok(PossibleLiterals { values: literals })
 }
 
-fn parse_hashed_value<'a>(context: ParseContext) -> impl Parser<&'a str, u8, ContextError> {
+fn parse_hashed_value<'a>(context: ParseContext) -> impl ModalParser<&'a str, u8, ContextError> {
     move |input: &mut &str| {
         if let Some(hashed_value) = context.hashed_value {
             let range = (context.range_fn)();
@@ -564,12 +570,12 @@ fn parse_hashed_value<'a>(context: ParseContext) -> impl Parser<&'a str, u8, Con
     }
 }
 
-fn parse_asterisk<'a>(context: ParseContext) -> impl Parser<&'a str, Vec<u8>, ContextError> {
+fn parse_asterisk<'a>(context: ParseContext) -> impl ModalParser<&'a str, Vec<u8>, ContextError> {
     let range = context.range_fn;
     "*".map(move |_| range().collect())
 }
 
-fn parse_single_number<'a>(context: ParseContext) -> impl Parser<&'a str, u8, ContextError> {
+fn parse_single_number<'a>(context: ParseContext) -> impl ModalParser<&'a str, u8, ContextError> {
     let range = context.range_fn;
     dec_uint.try_map_cut(move |n: u64| {
         let range = range();
@@ -594,9 +600,9 @@ fn parse_single_number<'a>(context: ParseContext) -> impl Parser<&'a str, u8, Co
 fn parse_range<'a, P>(
     context: ParseContext,
     parse_single_range_bound: fn(context: ParseContext) -> P,
-) -> impl Parser<&'a str, Vec<u8>, ContextError>
+) -> impl ModalParser<&'a str, Vec<u8>, ContextError>
 where
-    P: Parser<&'a str, u8, ContextError>,
+    P: ModalParser<&'a str, u8, ContextError>,
 {
     let range = context.range_fn;
     (
@@ -626,9 +632,9 @@ where
 fn parse_step<'a, P>(
     context: ParseContext,
     parse_single_range_bound: fn(context: ParseContext) -> P,
-) -> impl Parser<&'a str, Vec<u8>, ContextError>
+) -> impl ModalParser<&'a str, Vec<u8>, ContextError>
 where
-    P: Parser<&'a str, u8, ContextError>,
+    P: ModalParser<&'a str, u8, ContextError>,
 {
     let range = context.range_fn;
     let range_end = *range().end();
@@ -667,9 +673,11 @@ where
     })
 }
 
-fn parse_list<'a, P>(parse_list_item: P) -> impl Parser<&'a str, Vec<PossibleValue>, ContextError>
+fn parse_list<'a, P>(
+    parse_list_item: P,
+) -> impl ModalParser<&'a str, Vec<PossibleValue>, ContextError>
 where
-    P: Parser<&'a str, Vec<PossibleValue>, ContextError>,
+    P: ModalParser<&'a str, Vec<PossibleValue>, ContextError>,
 {
     (separated(1.., parse_list_item, ","), eof)
         .map(move |(ns, _): (Vec<Vec<PossibleValue>>, _)| ns.into_iter().flatten().collect())
@@ -681,7 +689,7 @@ fn map_hash_into_range(hashed_value: u64, range: RangeInclusive<u8>) -> u8 {
     (range.start() + hashed_value as u8).min(*range.end())
 }
 
-trait ParserExt<I, O, E>: Parser<I, O, E> {
+trait ModalParserExt<I, O, E>: ModalParser<I, O, E> {
     #[inline(always)]
     fn try_map_cut<G, O2, E2>(self, map: G) -> TryMapCut<Self, G, I, O, O2, E, E2>
     where
@@ -690,13 +698,21 @@ trait ParserExt<I, O, E>: Parser<I, O, E> {
         I: Stream,
         E: FromExternalError<I, E2>,
     {
-        TryMapCut::new(self, map)
+        TryMapCut {
+            parser: self,
+            map,
+            i: Default::default(),
+            o: Default::default(),
+            o2: Default::default(),
+            e: Default::default(),
+            e2: Default::default(),
+        }
     }
 }
 
 struct TryMapCut<F, G, I, O, O2, E, E2>
 where
-    F: Parser<I, O, E>,
+    F: ModalParser<I, O, E>,
     G: FnMut(O) -> Result<O2, E2>,
     I: Stream,
     E: FromExternalError<I, E2>,
@@ -710,47 +726,26 @@ where
     e2: core::marker::PhantomData<E2>,
 }
 
-impl<F, G, I, O, O2, E, E2> TryMapCut<F, G, I, O, O2, E, E2>
+impl<F, G, I, O, O2, E, E2> Parser<I, O2, ErrMode<E>> for TryMapCut<F, G, I, O, O2, E, E2>
 where
-    F: Parser<I, O, E>,
-    G: FnMut(O) -> Result<O2, E2>,
-    I: Stream,
-    E: FromExternalError<I, E2>,
-{
-    #[inline(always)]
-    fn new(parser: F, map: G) -> Self {
-        Self {
-            parser,
-            map,
-            i: Default::default(),
-            o: Default::default(),
-            o2: Default::default(),
-            e: Default::default(),
-            e2: Default::default(),
-        }
-    }
-}
-
-impl<F, G, I, O, O2, E, E2> Parser<I, O2, E> for TryMapCut<F, G, I, O, O2, E, E2>
-where
-    F: Parser<I, O, E>,
+    F: ModalParser<I, O, E>,
     G: FnMut(O) -> Result<O2, E2>,
     I: Stream,
     E: FromExternalError<I, E2>,
 {
     #[inline]
-    fn parse_next(&mut self, input: &mut I) -> PResult<O2, E> {
+    fn parse_next(&mut self, input: &mut I) -> ModalResult<O2, E> {
         let start = input.checkpoint();
         let o = self.parser.parse_next(input)?;
 
         (self.map)(o).map_err(|err| {
             input.reset(&start);
-            ErrMode::from_external_error(input, ErrorKind::Verify, err).cut()
+            ErrMode::from_external_error(input, err).cut()
         })
     }
 }
 
-impl<I, O, E, P> ParserExt<I, O, E> for P where P: Parser<I, O, E> {}
+impl<I, O, E, P> ModalParserExt<I, O, E> for P where P: ModalParser<I, O, E> {}
 
 #[cfg(test)]
 mod tests {
