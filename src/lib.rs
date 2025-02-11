@@ -484,6 +484,8 @@ pub use parser::parse_crontab_with;
 pub use parser::FallbackTimezoneOption;
 pub use parser::ParseOptions;
 
+pub extern crate jiff;
+
 /// An error that can occur in this crate.
 #[derive(Debug, Clone, thiserror::Error)]
 #[error("{0}")]
