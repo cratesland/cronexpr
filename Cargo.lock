@@ -25,7 +25,7 @@ dependencies = [
 
 [[package]]
 name = "cronexpr"
-version = "1.1.5"
+version = "1.2.0"
 dependencies = [
  "insta",
  "jiff",
@@ -55,9 +55,9 @@ dependencies = [
 
 [[package]]
 name = "jiff"
-version = "0.1.28"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c607c728e28764fecde611a2764a3a5db19ae21dcec46f292244f5cc5c085a81"
+checksum = "ba926fdd8e5b5e7f9700355b0831d8c416afe94b014b1023424037a187c9c582"
 dependencies = [
  "jiff-tzdb-platform",
  "log",
