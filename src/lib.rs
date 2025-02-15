@@ -402,7 +402,7 @@
 //! Starting from 1.1.0, the timezone can be _optional_ by calling [`parse_crontab_with`] a
 //! [`ParseOptions`] whose `fallback_timezone_option` is not [`None`](FallbackTimezoneOption::None).
 //!
-//! ### Why does [`Crontab::find_next`] and [`Crontab::iter_after`] only support exclusive bounds?
+//! ## Why does [`Crontab::find_next`] and [`Crontab::iter_after`] only support exclusive bounds?
 //!
 //! Crontab jobs are schedule at most every minute. Bike-shedding the inclusive bounds is not
 //! practical.
@@ -410,7 +410,7 @@
 //! If you'd like to try to match the boundary anyway, you can test it with [`Crontab::matches`]
 //! before calling [`Crontab::find_next`] or [`Crontab::iter_after`].
 //!
-//! ### Why not support aliases like `@hourly` and `@reboot`?
+//! ## Why not support aliases like `@hourly` and `@reboot`?
 //!
 //! They are too handy to support and are totally different syntax in parsing.
 //!
