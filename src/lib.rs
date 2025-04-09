@@ -355,7 +355,7 @@
 //!
 //! ## Why do you create this crate?
 //!
-//! The other day when I was implementing [`CREATE TASK` in ScopeDB](https://www.scopedb.io/reference/stmt-ddl#create-task),
+//! The other day when I was implementing [`CREATE JOB` in ScopeDB](https://docs.scopedb.io/reference/stmt-ddl/#create-job),
 //! it comes to a requirement to support parsing and driving a crontab expression.
 //!
 //! Typically, the language interface looks like:
