@@ -92,7 +92,7 @@ fn main() {
 
 ## Who is using `cronexpr`?
 
-The original purpose of this library is to be used in [supporting `CREATE TASK` in ScopeDB](https://www.scopedb.io/reference/stmt-ddl#create-task).
+The original purpose of this library is to be used in [supporting `CREATE JOB` in ScopeDB](https://docs.scopedb.io/reference/stmt-ddl/#create-job).
 
 If you are using `cronexpr` in your project, please feel free to open a PR to add your project to this list.
 
