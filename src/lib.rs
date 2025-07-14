@@ -361,7 +361,7 @@
 //! Typically, the language interface looks like:
 //!
 //! ```sql
-//! CREATE TASK do_retention
+//! CREATE JOB do_retention
 //! SCHEDULE = '* * * * * Asia/Shanghai'
 //! AS
 //!     DELETE FROM t WHERE now() - ts > 'PT10s'::interval;
