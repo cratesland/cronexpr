@@ -465,6 +465,7 @@
 
 use std::collections::BTreeSet;
 use std::collections::HashSet;
+use std::fmt;
 use std::str::FromStr;
 
 use jiff::civil::Weekday;
@@ -487,9 +488,16 @@ pub use parser::ParseOptions;
 pub extern crate jiff;
 
 /// An error that can occur in this crate.
-#[derive(Debug, Clone, thiserror::Error)]
-#[error("{0}")]
+#[derive(Debug, Clone)]
 pub struct Error(String);
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl std::error::Error for Error {}
 
 /// A data struct representing the crontab expression.
 #[derive(Debug, Clone)]
