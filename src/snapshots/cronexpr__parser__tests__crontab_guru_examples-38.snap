@@ -44,6 +44,6 @@ Crontab {
         start_with_asterisk: true,
     },
     timezone: TimeZone(
-        "UTC",
+        UTC,
     ),
 }
