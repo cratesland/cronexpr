@@ -17,6 +17,7 @@ use std::collections::HashSet;
 use std::ops::RangeInclusive;
 
 use jiff::civil::Weekday;
+use jiff::fmt::temporal::DateTimeParser;
 use winnow::ascii::dec_uint;
 use winnow::combinator::alt;
 use winnow::combinator::eof;
@@ -512,7 +513,8 @@ fn parse_days_of_month<'a>(
 fn parse_timezone(input: &mut &str) -> ModalResult<jiff::tz::TimeZone> {
     take_while(0.., |_| true)
         .try_map_cut(|timezone| {
-            jiff::tz::TimeZone::get(timezone).map_err(|_| {
+            static PARSER: DateTimeParser = DateTimeParser::new();
+            PARSER.parse_time_zone(timezone).map_err(|_| {
                 Error(format!(
                     "failed to find timezone {timezone}; \
                 for a list of time zones, see the list of tz database time zones on Wikipedia: \
@@ -795,6 +797,10 @@ mod tests {
         };
         assert_debug_snapshot!(parse_crontab_with("H * * * * America/Denver", options).unwrap());
         assert_debug_snapshot!(parse_crontab_with("H H H H H America/Denver", options).unwrap());
+
+        assert_debug_snapshot!(parse_crontab("0 0 1 1 5 +08:00").unwrap());
+        assert_debug_snapshot!(parse_crontab("0 0 1 1 5 +00:00").unwrap());
+        assert_debug_snapshot!(parse_crontab("0 0 1 1 5 -08:00").unwrap());
     }
 
     #[test]
@@ -830,6 +836,10 @@ mod tests {
 
         // hashed value
         assert_snapshot!(parse_crontab("H * * * * UTC").unwrap_err());
+
+        assert_snapshot!(parse_crontab("0 0 1 1 5 +26:00").unwrap_err());
+        assert_snapshot!(parse_crontab("0 0 1 1 5 +Ch:Ch").unwrap_err());
+        assert_snapshot!(parse_crontab("0 0 1 1 5 -08:75").unwrap_err());
     }
 
     #[test]
@@ -875,5 +885,8 @@ mod tests {
         assert_debug_snapshot!(parse_crontab("0 0 1 */3 * UTC").unwrap());
         assert_debug_snapshot!(parse_crontab("0 0 1 */6 * UTC").unwrap());
         assert_debug_snapshot!(parse_crontab("0 0 1 1 * UTC").unwrap());
+        assert_debug_snapshot!(parse_crontab("0 9 * * 1-5 +08:00").unwrap());
+        assert_debug_snapshot!(parse_crontab("*/15 9-17 * * * +09:00").unwrap());
+        assert_debug_snapshot!(parse_crontab("0 */6 * * * -03:00").unwrap());
     }
 }

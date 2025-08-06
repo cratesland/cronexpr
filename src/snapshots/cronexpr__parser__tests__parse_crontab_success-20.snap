@@ -1,0 +1,40 @@
+---
+source: src/parser.rs
+expression: "parse_crontab(\"0 0 1 1 5 -08:00\").unwrap()"
+---
+Crontab {
+    minutes: PossibleLiterals {
+        values: {
+            0,
+        },
+    },
+    hours: PossibleLiterals {
+        values: {
+            0,
+        },
+    },
+    months: PossibleLiterals {
+        values: {
+            1,
+        },
+    },
+    days_of_month: ParsedDaysOfMonth {
+        literals: {
+            1,
+        },
+        last_day_of_month: false,
+        nearest_weekdays: {},
+        start_with_asterisk: false,
+    },
+    days_of_week: ParsedDaysOfWeek {
+        literals: {
+            5,
+        },
+        last_days_of_week: {},
+        nth_days_of_week: {},
+        start_with_asterisk: false,
+    },
+    timezone: TimeZone(
+        -08:00:00,
+    ),
+}
