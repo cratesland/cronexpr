@@ -1,0 +1,7 @@
+---
+source: src/parser.rs
+expression: "parse_crontab(\"0 0 1 1 5 -08:75\").unwrap_err()"
+---
+failed to parse crontab expression:
+0 0 1 1 5 -08:75
+          ^ failed to find timezone -08:75; for a list of time zones, see the list of tz database time zones on Wikipedia: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
